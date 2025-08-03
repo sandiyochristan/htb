@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTB Academy - Course Navigation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e1e8ed;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .course-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .course-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .course-header .module-count {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .modules-list {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .module-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .module-item:hover {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+            transform: translateX(5px);
+        }
+
+        .module-item .module-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            background: #2196f3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .module-item .module-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .module-item .module-link {
+            color: #2196f3;
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .search-container {
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #2196f3;
+        }
+
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .course-ai { border-left-color: #e74c3c; }
+        .course-bug-bounty { border-left-color: #f39c12; }
+        .course-defensive { border-left-color: #27ae60; }
+        .course-fundamentals { border-left-color: #9b59b6; }
+        .course-penetration { border-left-color: #3498db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HTB Academy</h1>
+            <p>Comprehensive Course Navigation & Module Directory</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search for courses or modules..." id="searchBox">
+        </div>
+
+        <div class="courses-grid" id="coursesGrid">
+            <!-- AI Course -->
+            <div class="course-card course-ai" data-category="ai">
+                <div class="course-header">
+                    <h2>🤖 AI</h2>
+                    <div class="module-count">6 Modules Available</div>
+                </div>
+                <div class="modules-list">
+                    <a href="AI/AI Data Attacks/index.html" class="module-item">
+                        <div class="module-icon">1</div>
+                        <div class="module-name">AI Data Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="AI/Applications of AI in InfoSec/index.html" class="module-item">
+                        <div class="module-icon">2</div>
+                        <div class="module-name">Applications of AI in InfoSec</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="AI/Fundamentals of AI/index.html" class="module-item">
+                        <div class="module-icon">3</div>
+                        <div class="module-name">Fundamentals of AI</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="AI/Introduction to Red Teaming AI/index.html" class="module-item">
+                        <div class="module-icon">4</div>
+                        <div class="module-name">Introduction to Red Teaming AI</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="AI/LLM Output Attacks/index.html" class="module-item">
+                        <div class="module-icon">5</div>
+                        <div class="module-name">LLM Output Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="AI/Prompt Injection Attacks/index.html" class="module-item">
+                        <div class="module-icon">6</div>
+                        <div class="module-name">Prompt Injection Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bug Bounty Course -->
+            <div class="course-card course-bug-bounty" data-category="bug-bounty">
+                <div class="course-header">
+                    <h2>🐛 Bug Bounty</h2>
+                    <div class="module-count">20 Modules Available</div>
+                </div>
+                <div class="modules-list">
+                    <a href="Bug Bounty/API Attacks/index.html" class="module-item">
+                        <div class="module-icon">1</div>
+                        <div class="module-name">API Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Attacking GraphQL/index.html" class="module-item">
+                        <div class="module-icon">2</div>
+                        <div class="module-name">Attacking GraphQL</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Attacking Web Applications with Ffuf/index.html" class="module-item">
+                        <div class="module-icon">3</div>
+                        <div class="module-name">Attacking Web Applications with Ffuf</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Broken Authentication/index.html" class="module-item">
+                        <div class="module-icon">4</div>
+                        <div class="module-name">Broken Authentication</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Bug Bounty Hunting Process/index.html" class="module-item">
+                        <div class="module-icon">5</div>
+                        <div class="module-name">Bug Bounty Hunting Process</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Command Injections/index.html" class="module-item">
+                        <div class="module-icon">6</div>
+                        <div class="module-name">Command Injections</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Cross-Site Scripting (XSS)/index.html" class="module-item">
+                        <div class="module-icon">7</div>
+                        <div class="module-name">Cross-Site Scripting (XSS)</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/File inclusion/index.html" class="module-item">
+                        <div class="module-icon">8</div>
+                        <div class="module-name">File inclusion</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/File Upload Attacks/index.html" class="module-item">
+                        <div class="module-icon">9</div>
+                        <div class="module-name">File Upload Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Hacking WordPress/index.html" class="module-item">
+                        <div class="module-icon">10</div>
+                        <div class="module-name">Hacking WordPress</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Information Gathering - Web Edition/index.html" class="module-item">
+                        <div class="module-icon">11</div>
+                        <div class="module-name">Information Gathering - Web Edition</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Introduction to Web Application/index.html" class="module-item">
+                        <div class="module-icon">12</div>
+                        <div class="module-name">Introduction to Web Application</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/JavaScript Deobfuscation/index.html" class="module-item">
+                        <div class="module-icon">13</div>
+                        <div class="module-name">JavaScript Deobfuscation</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Login Brute Forcing/index.html" class="module-item">
+                        <div class="module-icon">14</div>
+                        <div class="module-name">Login Brute Forcing</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Server-side Attacks/index.html" class="module-item">
+                        <div class="module-icon">15</div>
+                        <div class="module-name">Server-side Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Session Security/index.html" class="module-item">
+                        <div class="module-icon">16</div>
+                        <div class="module-name">Session Security</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/SQL Injection Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">17</div>
+                        <div class="module-name">SQL Injection Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/SQLMap Essentials/index.html" class="module-item">
+                        <div class="module-icon">18</div>
+                        <div class="module-name">SQLMap Essentials</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Using Web Proxies/index.html" class="module-item">
+                        <div class="module-icon">19</div>
+                        <div class="module-name">Using Web Proxies</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Web Attacks/index.html" class="module-item">
+                        <div class="module-icon">20</div>
+                        <div class="module-name">Web Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Web Requests/index.html" class="module-item">
+                        <div class="module-icon">21</div>
+                        <div class="module-name">Web Requests</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Bug Bounty/Web Service & API Attacks/index.html" class="module-item">
+                        <div class="module-icon">22</div>
+                        <div class="module-name">Web Service & API Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Defensive Security Course -->
+            <div class="course-card course-defensive" data-category="defensive">
+                <div class="course-header">
+                    <h2>🛡️ Defensive Security</h2>
+                    <div class="module-count">15 Modules Available</div>
+                </div>
+                <div class="modules-list">
+                    <a href="Defensive Security/Detecting Windows Attacks with Splunk/index.html" class="module-item">
+                        <div class="module-icon">1</div>
+                        <div class="module-name">Detecting Windows Attacks with Splunk</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Incident Handling Process/index.html" class="module-item">
+                        <div class="module-icon">2</div>
+                        <div class="module-name">Incident Handling Process</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Intermediate Network Traffic Analysis/index.html" class="module-item">
+                        <div class="module-icon">3</div>
+                        <div class="module-name">Intermediate Network Traffic Analysis</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Intro to Network Traffic Analysis/index.html" class="module-item">
+                        <div class="module-icon">4</div>
+                        <div class="module-name">Intro to Network Traffic Analysis</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Introduction to Digital Forensics/index.html" class="module-item">
+                        <div class="module-icon">5</div>
+                        <div class="module-name">Introduction to Digital Forensics</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Introduction to Malware Analysis/index.html" class="module-item">
+                        <div class="module-icon">6</div>
+                        <div class="module-name">Introduction to Malware Analysis</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Investigating with Splunk/index.html" class="module-item">
+                        <div class="module-icon">7</div>
+                        <div class="module-name">Investigating with Splunk</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/JavaScript Deobfuscation/index.html" class="module-item">
+                        <div class="module-icon">8</div>
+                        <div class="module-name">JavaScript Deobfuscation</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Security Incident Reporting/index.html" class="module-item">
+                        <div class="module-icon">9</div>
+                        <div class="module-name">Security Incident Reporting</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Security Monitoring & SIEM Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">10</div>
+                        <div class="module-name">Security Monitoring & SIEM Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Threat Hunting & Hunting with Elastic/index.html" class="module-item">
+                        <div class="module-icon">11</div>
+                        <div class="module-name">Threat Hunting & Hunting with Elastic</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Windows Attacks & Defense/index.html" class="module-item">
+                        <div class="module-icon">12</div>
+                        <div class="module-name">Windows Attacks & Defense</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Windows Event Logs & Finding Evil/index.html" class="module-item">
+                        <div class="module-icon">13</div>
+                        <div class="module-name">Windows Event Logs & Finding Evil</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/Working with IDS-IPS/index.html" class="module-item">
+                        <div class="module-icon">14</div>
+                        <div class="module-name">Working with IDS-IPS</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Defensive Security/YARA & Sigma for SOC Analysts/index.html" class="module-item">
+                        <div class="module-icon">15</div>
+                        <div class="module-name">YARA & Sigma for SOC Analysts</div>
+                        <div class="module-link">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Fundamentals Modules Course -->
+            <div class="course-card course-fundamentals" data-category="fundamentals">
+                <div class="course-header">
+                    <h2>📚 Fundamentals Modules</h2>
+                    <div class="module-count">16 Modules Available</div>
+                </div>
+                <div class="modules-list">
+                    <a href="Fundamentals Modules/Android Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">1</div>
+                        <div class="module-name">Android Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/DNS Enumeration (Python)/index.html" class="module-item">
+                        <div class="module-icon">2</div>
+                        <div class="module-name">DNS Enumeration (Python)</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/intro to academys Purple Modules/index.html" class="module-item">
+                        <div class="module-icon">3</div>
+                        <div class="module-name">Intro to Academy's Purple Modules</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Intro to Hardware Attacks/index.html" class="module-item">
+                        <div class="module-icon">4</div>
+                        <div class="module-name">Intro to Hardware Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Introduction to Active Directory/index.html" class="module-item">
+                        <div class="module-icon">5</div>
+                        <div class="module-name">Introduction to Active Directory</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Introduction to Assembly/index.html" class="module-item">
+                        <div class="module-icon">6</div>
+                        <div class="module-name">Introduction to Assembly</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Introduction to Bash Scripting/index.html" class="module-item">
+                        <div class="module-icon">7</div>
+                        <div class="module-name">Introduction to Bash Scripting</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Introduction to C#/index.html" class="module-item">
+                        <div class="module-icon">8</div>
+                        <div class="module-name">Introduction to C#</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Introduction to Python 3/index.html" class="module-item">
+                        <div class="module-icon">9</div>
+                        <div class="module-name">Introduction to Python 3</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Linux Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">10</div>
+                        <div class="module-name">Linux Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/macOS Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">11</div>
+                        <div class="module-name">macOS Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Network Foundations/index.html" class="module-item">
+                        <div class="module-icon">12</div>
+                        <div class="module-name">Network Foundations</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Setting Up Your Environment/index.html" class="module-item">
+                        <div class="module-icon">13</div>
+                        <div class="module-name">Setting Up Your Environment</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Web Fuzzing/index.html" class="module-item">
+                        <div class="module-icon">14</div>
+                        <div class="module-name">Web Fuzzing</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Windows Command Line/index.html" class="module-item">
+                        <div class="module-icon">15</div>
+                        <div class="module-name">Windows Command Line</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Fundamentals Modules/Windows Stack Buffer Overflows/index.html" class="module-item">
+                        <div class="module-icon">16</div>
+                        <div class="module-name">Windows Stack Buffer Overflows</div>
+                        <div class="module-link">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Penetration Testing Course -->
+            <div class="course-card course-penetration" data-category="penetration">
+                <div class="course-header">
+                    <h2>⚔️ Penetration Testing</h2>
+                    <div class="module-count">30 Modules Available</div>
+                </div>
+                <div class="modules-list">
+                    <a href="Penetration Testing/Active Directory Enumeration & Attacks/index.html" class="module-item">
+                        <div class="module-icon">1</div>
+                        <div class="module-name">Active Directory Enumeration & Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Attacking Common Applications/index.html" class="module-item">
+                        <div class="module-icon">2</div>
+                        <div class="module-name">Attacking Common Applications</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Attacking Common Services/index.html" class="module-item">
+                        <div class="module-icon">3</div>
+                        <div class="module-name">Attacking Common Services</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Attacking Enterprise Networks/index.html" class="module-item">
+                        <div class="module-icon">4</div>
+                        <div class="module-name">Attacking Enterprise Networks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Attacking Web Applications with Ffuf/index.html" class="module-item">
+                        <div class="module-icon">5</div>
+                        <div class="module-name">Attacking Web Applications with Ffuf</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Attacking Wi-Fi Protected Setup (WPS)/index.html" class="module-item">
+                        <div class="module-icon">6</div>
+                        <div class="module-name">Attacking Wi-Fi Protected Setup (WPS)</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Command Injections/index.html" class="module-item">
+                        <div class="module-icon">7</div>
+                        <div class="module-name">Command Injections</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Cross-Site Scripting (XSS)/index.html" class="module-item">
+                        <div class="module-icon">8</div>
+                        <div class="module-name">Cross-Site Scripting (XSS)</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Documentation & Reporting/index.html" class="module-item">
+                        <div class="module-icon">9</div>
+                        <div class="module-name">Documentation & Reporting</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/File inclusion/index.html" class="module-item">
+                        <div class="module-icon">10</div>
+                        <div class="module-name">File inclusion</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/File Transfers/index.html" class="module-item">
+                        <div class="module-icon">11</div>
+                        <div class="module-name">File Transfers</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/File Upload Attacks/index.html" class="module-item">
+                        <div class="module-icon">12</div>
+                        <div class="module-name">File Upload Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Footprinting/index.html" class="module-item">
+                        <div class="module-icon">13</div>
+                        <div class="module-name">Footprinting</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Information Gathering - Web Edition/index.html" class="module-item">
+                        <div class="module-icon">14</div>
+                        <div class="module-name">Information Gathering - Web Edition</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Linux Privilege Escalation/index.html" class="module-item">
+                        <div class="module-icon">15</div>
+                        <div class="module-name">Linux Privilege Escalation</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Login Brute Forcing/index.html" class="module-item">
+                        <div class="module-icon">16</div>
+                        <div class="module-name">Login Brute Forcing</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Network Enumeration with Nmap/index.html" class="module-item">
+                        <div class="module-icon">17</div>
+                        <div class="module-name">Network Enumeration with Nmap</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Password attacks/index.html" class="module-item">
+                        <div class="module-icon">18</div>
+                        <div class="module-name">Password attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Pivoting, Tunneling, and Port Forwarding/index.html" class="module-item">
+                        <div class="module-icon">19</div>
+                        <div class="module-name">Pivoting, Tunneling, and Port Forwarding</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Shells & Payloads/index.html" class="module-item">
+                        <div class="module-icon">20</div>
+                        <div class="module-name">Shells & Payloads</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/SQL Injection Fundamentals/index.html" class="module-item">
+                        <div class="module-icon">21</div>
+                        <div class="module-name">SQL Injection Fundamentals</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/SQLMap Essentials/index.html" class="module-item">
+                        <div class="module-icon">22</div>
+                        <div class="module-name">SQLMap Essentials</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Using the Metasploit Framework/index.html" class="module-item">
+                        <div class="module-icon">23</div>
+                        <div class="module-name">Using the Metasploit Framework</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Using Web Proxies/index.html" class="module-item">
+                        <div class="module-icon">24</div>
+                        <div class="module-name">Using Web Proxies</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Vulnerability assessment/index.html" class="module-item">
+                        <div class="module-icon">25</div>
+                        <div class="module-name">Vulnerability assessment</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Web Attacks/index.html" class="module-item">
+                        <div class="module-icon">26</div>
+                        <div class="module-name">Web Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Wi-Fi Penetration Testing Basics/index.html" class="module-item">
+                        <div class="module-icon">27</div>
+                        <div class="module-name">Wi-Fi Penetration Testing Basics</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Windows Privilege Escalation/index.html" class="module-item">
+                        <div class="module-icon">28</div>
+                        <div class="module-name">Windows Privilege Escalation</div>
+                        <div class="module-link">→</div>
+                    </a>
+                    <a href="Penetration Testing/Wired Equivalent Privacy (WEP) Attacks/index.html" class="module-item">
+                        <div class="module-icon">29</div>
+                        <div class="module-name">Wired Equivalent Privacy (WEP) Attacks</div>
+                        <div class="module-link">→</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Main Courses</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">87</div>
+                <div class="stat-label">Total Modules</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">AI</div>
+                <div class="stat-label">Latest Technology</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Interactive Learning</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchBox = document.getElementById('searchBox');
+        const coursesGrid = document.getElementById('coursesGrid');
+        const courseCards = document.querySelectorAll('.course-card');
+        const moduleItems = document.querySelectorAll('.module-item');
+
+        searchBox.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            courseCards.forEach(card => {
+                const courseName = card.querySelector('h2').textContent.toLowerCase();
+                const modules = card.querySelectorAll('.module-item');
+                let hasMatch = courseName.includes(searchTerm);
+                
+                modules.forEach(module => {
+                    const moduleName = module.querySelector('.module-name').textContent.toLowerCase();
+                    if (moduleName.includes(searchTerm)) {
+                        hasMatch = true;
+                        module.style.display = 'flex';
+                    } else if (searchTerm === '') {
+                        module.style.display = 'flex';
+                    } else {
+                        module.style.display = 'none';
+                    }
+                });
+                
+                if (hasMatch || searchTerm === '') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Add click tracking for analytics (optional)
+        moduleItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const moduleName = this.querySelector('.module-name').textContent;
+                console.log(`Module accessed: ${moduleName}`);
+            });
+        });
+    </script>
+</body>
+</html> 
